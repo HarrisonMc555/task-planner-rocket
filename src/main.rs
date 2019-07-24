@@ -13,6 +13,7 @@ extern crate serde_derive;
 #[macro_use]
 extern crate rocket_contrib;
 
+mod plan;
 mod task;
 #[cfg(test)]
 mod tests;
@@ -24,6 +25,7 @@ use rocket::response::{Flash, Redirect};
 use rocket::Rocket;
 use rocket_contrib::{serve::StaticFiles, templates::Template};
 
+use crate::plan::{PlanWithId};
 use crate::task::{Task, TaskFormInput, TaskWithId};
 
 // This macro from `diesel_migrations` defines an `embedded_migrations` module
@@ -38,6 +40,7 @@ pub struct DbConn(SqliteConnection);
 struct Context<'a, 'b> {
     msg: Option<(&'a str, &'b str)>,
     tasks: Vec<TaskWithId>,
+    plans: Vec<PlanWithId>,
 }
 
 impl<'a, 'b> Context<'a, 'b> {
@@ -45,6 +48,7 @@ impl<'a, 'b> Context<'a, 'b> {
         Context {
             msg: Some(("error", msg)),
             tasks: TaskWithId::all(conn),
+            plans: PlanWithId::all(conn),
         }
     }
 
@@ -52,6 +56,7 @@ impl<'a, 'b> Context<'a, 'b> {
         Context {
             msg: msg,
             tasks: TaskWithId::all(conn),
+            plans: PlanWithId::all(conn),
         }
     }
 }

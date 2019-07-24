@@ -40,8 +40,8 @@
       <div class="twelve columns">
         <ul>
         {% for task in tasks %}
-          {% if task.completed %}
-            <li>
+          <li>
+            {% if task.completed %}
               <span class="completed">{{ task.description }}</span>
               <form class="inline" action="/task/{{task.id}}" method="post">
                 <input type="hidden" name="_method" value="put" />
@@ -51,15 +51,13 @@
                 <input type="hidden" name="_method" value="delete" />
                 <button class="primary small" type="submit">delete</button>
               </form>
-            </li>
-          {% else %}
-            <li>
+            {% else %}
               <form class="link" action="/task/{{task.id}}" method="post">
                 <input type="hidden" name="_method" value="put" />
                 <button class="link" type="submit">{{ task.description }}</button>
               </form>
-            </li>
-          {% endif %}
+            {% endif %}
+          </li>
         {% endfor %}
         </ul>
       </div>
