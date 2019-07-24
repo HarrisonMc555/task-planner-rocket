@@ -22,7 +22,7 @@ pub struct Task {
 }
 
 #[derive(FromForm)]
-pub struct Todo {
+pub struct TaskInput {
     pub description: String,
 }
 
@@ -34,10 +34,10 @@ impl Task {
             .unwrap()
     }
 
-    pub fn insert(todo: Todo, conn: &SqliteConnection) -> bool {
+    pub fn insert(task_input: TaskInput, conn: &SqliteConnection) -> bool {
         let t = Task {
             id: None,
-            description: todo.description,
+            description: task_input.description,
             completed: false,
         };
         diesel::insert_into(tasks::table)

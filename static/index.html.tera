@@ -19,7 +19,7 @@
 
     <div class="row">
       <h4>Task Planner</h4>
-      <form action="/todo" method="post">
+      <form action="/task" method="post">
         <div class="ten columns">
           <input type="text" placeholder="enter a task description..."
             name="description" id="description" value="" autofocus
@@ -43,18 +43,18 @@
           {% if task.completed %}
             <li>
               <span class="completed">{{ task.description }}</span>
-              <form class="inline" action="/todo/{{task.id}}" method="post">
+              <form class="inline" action="/task/{{task.id}}" method="post">
                 <input type="hidden" name="_method" value="put" />
                 <button class="small" type="submit">undo</button>
               </form>
-              <form class="inline" action="/todo/{{task.id}}" method="post">
+              <form class="inline" action="/task/{{task.id}}" method="post">
                 <input type="hidden" name="_method" value="delete" />
                 <button class="primary small" type="submit">delete</button>
               </form>
             </li>
           {% else %}
             <li>
-              <form class="link" action="/todo/{{task.id}}" method="post">
+              <form class="link" action="/task/{{task.id}}" method="post">
                 <input type="hidden" name="_method" value="put" />
                 <button class="link" type="submit">{{ task.description }}</button>
               </form>
