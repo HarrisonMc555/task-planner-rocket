@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Rocket Todo Example</title>
-  <meta name="description" content="A todo application written in Rocket.">
-  <meta name="author" content="Sergio Benitez">
+  <title>Task Planner</title>
+  <meta name="description" content="A task planner.">
+  <meta name="author" content="Harrison McCullough">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <link href="//fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css">
@@ -18,7 +18,7 @@
     <p><!--Nothing to see here --></p>
 
     <div class="row">
-      <h4>Rocket Todo</h4>
+      <h4>Task Planner</h4>
       <form action="/todo" method="post">
         <div class="ten columns">
           <input type="text" placeholder="enter a task description..."
