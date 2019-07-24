@@ -3,7 +3,7 @@ use diesel::{self, prelude::*};
 mod schema {
     table! {
         tasks {
-            id -> Nullable<Integer>,
+            id -> Integer,
             description -> Text,
             completed -> Bool,
         }
@@ -13,31 +13,35 @@ mod schema {
 use self::schema::tasks;
 use self::schema::tasks::dsl::{completed as task_completed, tasks as all_tasks};
 
+// This gives me the error "cannot find attribute macro `table_name` in this
+// scope". I believe this is a compiler error (or at least an inaccurate
+// compiler error message). However, it compiles fine without it, which actually
+// confuses me even more.
+// #[table_name = "tasks"]
+#[derive(Serialize, Queryable, Debug, Clone)]
+pub struct TaskWithId {
+    pub id: i32,
+    pub description: String,
+    pub completed: bool,
+    // pub task: Task,
+}
+
+#[derive(Serialize, Insertable, Debug, Clone)]
 #[table_name = "tasks"]
-#[derive(Serialize, Queryable, Insertable, Debug, Clone)]
 pub struct Task {
-    pub id: Option<i32>,
     pub description: String,
     pub completed: bool,
 }
 
 #[derive(FromForm)]
-pub struct TaskInput {
+pub struct TaskFormInput {
     pub description: String,
 }
 
 impl Task {
-    pub fn all(conn: &SqliteConnection) -> Vec<Task> {
-        all_tasks
-            .order(tasks::id.desc())
-            .load::<Task>(conn)
-            .unwrap()
-    }
-
-    pub fn insert(task_input: TaskInput, conn: &SqliteConnection) -> bool {
+    pub fn insert(task_form_input: TaskFormInput, conn: &SqliteConnection) -> bool {
         let t = Task {
-            id: None,
-            description: task_input.description,
+            description: task_form_input.description,
             completed: false,
         };
         diesel::insert_into(tasks::table)
@@ -45,9 +49,18 @@ impl Task {
             .execute(conn)
             .is_ok()
     }
+}
+
+impl TaskWithId {
+    pub fn all(conn: &SqliteConnection) -> Vec<TaskWithId> {
+        all_tasks
+            .order(tasks::id.desc())
+            .load::<TaskWithId>(conn)
+            .unwrap()
+    }
 
     pub fn toggle_with_id(id: i32, conn: &SqliteConnection) -> bool {
-        let task = all_tasks.find(id).get_result::<Task>(conn);
+        let task = all_tasks.find(id).get_result::<TaskWithId>(conn);
         if task.is_err() {
             return false;
         }
