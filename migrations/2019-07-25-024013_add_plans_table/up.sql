@@ -1,8 +1,8 @@
 CREATE TABLE plans (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    taskid INTEGER NOT NULL,
+    task_id INTEGER NOT NULL,
     description VARCHAR,
     completed BOOLEAN NOT NULL DEFAULT 0,
-    FOREIGN KEY(taskid) REFERENCES tasks(id)
+    FOREIGN KEY(task_id) REFERENCES tasks(id)
 );
 

@@ -1,9 +1,11 @@
-use diesel::{self, prelude::*};
+use diesel;
+use diesel::prelude::*;
 
 mod schema {
     table! {
         plans {
             id -> Integer,
+            task_id -> Integer,
             description -> Nullable<Text>,
             completed -> Bool,
         }
@@ -12,17 +14,19 @@ mod schema {
 
 use self::schema::plans;
 use self::schema::plans::dsl::plans as all_plans;
+use crate::task::TaskWithId;
 
-// #[belongs_to(TaskWithId)]
-// #[table_name = "plans"]
-#[derive(Serialize, Queryable, Debug, Clone)]
+#[derive(Serialize, Identifiable, Queryable, Associations, Debug, Clone)]
+#[belongs_to(TaskWithId, foreign_key = "task_id")]
+#[table_name = "plans"]
 pub struct PlanWithId {
     pub id: i32,
+    pub task_id: i32,
     pub description: Option<String>,
     pub completed: bool,
 }
 
-#[derive(Serialize, Insertable, Debug, Clone)]
+#[derive(Serialize, Insertable, Associations, Debug, Clone)]
 #[table_name = "plans"]
 pub struct Plan {
     pub description: Option<String>,

@@ -18,7 +18,8 @@ use self::schema::tasks::dsl::{completed as task_completed, tasks as all_tasks};
 // compiler error message). However, it compiles fine without it, which actually
 // confuses me even more.
 // #[table_name = "tasks"]
-#[derive(Serialize, Queryable, Debug, Clone)]
+#[derive(Serialize, Identifiable, Queryable, Debug, Clone)]
+#[table_name = "tasks"]
 pub struct TaskWithId {
     pub id: i32,
     pub description: String,
