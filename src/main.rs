@@ -25,8 +25,8 @@ use rocket::response::{Flash, Redirect};
 use rocket::Rocket;
 use rocket_contrib::{serve::StaticFiles, templates::Template};
 
-use crate::plan::{PlanWithId};
-use crate::task::{Task, TaskFormInput, TaskWithId};
+use crate::plan::Plan;
+use crate::task::{InsertableTask, Task, TaskFormInput};
 
 // This macro from `diesel_migrations` defines an `embedded_migrations` module
 // containing a function named `run`. This allows the example to be run and
@@ -36,27 +36,27 @@ embed_migrations!();
 #[database("sqlite_database")]
 pub struct DbConn(SqliteConnection);
 
-#[derive(Debug, Serialize)]
+#[derive(Serialize)]
 struct Context<'a, 'b> {
     msg: Option<(&'a str, &'b str)>,
-    tasks: Vec<TaskWithId>,
-    plans: Vec<PlanWithId>,
+    tasks: Vec<Task>,
+    plans: Vec<Plan>,
 }
 
 impl<'a, 'b> Context<'a, 'b> {
     pub fn err(conn: &DbConn, msg: &'a str) -> Context<'static, 'a> {
         Context {
             msg: Some(("error", msg)),
-            tasks: TaskWithId::all(conn),
-            plans: PlanWithId::all(conn),
+            tasks: Task::all(conn),
+            plans: Plan::all(conn),
         }
     }
 
     pub fn raw(conn: &DbConn, msg: Option<(&'a str, &'b str)>) -> Context<'a, 'b> {
         Context {
             msg: msg,
-            tasks: TaskWithId::all(conn),
-            plans: PlanWithId::all(conn),
+            tasks: Task::all(conn),
+            plans: Plan::all(conn),
         }
     }
 }
@@ -66,7 +66,7 @@ fn new(task_form: Form<TaskFormInput>, conn: DbConn) -> Flash<Redirect> {
     let task_form_input = task_form.into_inner();
     if task_form_input.description.is_empty() {
         Flash::error(Redirect::to("/"), "Description cannot be empty.")
-    } else if Task::insert(task_form_input, &conn) {
+    } else if InsertableTask::insert(task_form_input, &conn) {
         Flash::success(Redirect::to("/"), "Task successfully added.")
     } else {
         Flash::error(Redirect::to("/"), "Whoops! The server failed.")
@@ -75,7 +75,7 @@ fn new(task_form: Form<TaskFormInput>, conn: DbConn) -> Flash<Redirect> {
 
 #[put("/<id>")]
 fn toggle(id: i32, conn: DbConn) -> Result<Redirect, Template> {
-    if TaskWithId::toggle_with_id(id, &conn) {
+    if Task::toggle_with_id(id, &conn) {
         Ok(Redirect::to("/"))
     } else {
         Err(Template::render(
@@ -87,7 +87,7 @@ fn toggle(id: i32, conn: DbConn) -> Result<Redirect, Template> {
 
 #[delete("/<id>")]
 fn delete(id: i32, conn: DbConn) -> Result<Flash<Redirect>, Template> {
-    if TaskWithId::delete_with_id(id, &conn) {
+    if Task::delete_with_id(id, &conn) {
         Ok(Flash::success(Redirect::to("/"), "Task was deleted."))
     } else {
         Err(Template::render(

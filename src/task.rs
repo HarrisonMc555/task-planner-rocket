@@ -13,23 +13,16 @@ mod schema {
 use self::schema::tasks;
 use self::schema::tasks::dsl::{completed as task_completed, tasks as all_tasks};
 
-// This gives me the error "cannot find attribute macro `table_name` in this
-// scope". I believe this is a compiler error (or at least an inaccurate
-// compiler error message). However, it compiles fine without it, which actually
-// confuses me even more.
-// #[table_name = "tasks"]
-#[derive(Serialize, Identifiable, Queryable, Debug, Clone)]
-#[table_name = "tasks"]
-pub struct TaskWithId {
+#[derive(Identifiable, Queryable, AsChangeset, Serialize, Deserialize)]
+pub struct Task {
     pub id: i32,
     pub description: String,
     pub completed: bool,
-    // pub task: Task,
 }
 
-#[derive(Serialize, Insertable, Debug, Clone)]
+#[derive(Insertable)]
 #[table_name = "tasks"]
-pub struct Task {
+pub struct InsertableTask {
     pub description: String,
     pub completed: bool,
 }
@@ -40,28 +33,15 @@ pub struct TaskFormInput {
 }
 
 impl Task {
-    pub fn insert(task_form_input: TaskFormInput, conn: &SqliteConnection) -> bool {
-        let t = Task {
-            description: task_form_input.description,
-            completed: false,
-        };
-        diesel::insert_into(tasks::table)
-            .values(&t)
-            .execute(conn)
-            .is_ok()
-    }
-}
-
-impl TaskWithId {
-    pub fn all(conn: &SqliteConnection) -> Vec<TaskWithId> {
+    pub fn all(conn: &SqliteConnection) -> Vec<Task> {
         all_tasks
             .order(tasks::id.desc())
-            .load::<TaskWithId>(conn)
+            .load::<Task>(conn)
             .unwrap()
     }
 
     pub fn toggle_with_id(id: i32, conn: &SqliteConnection) -> bool {
-        let task = all_tasks.find(id).get_result::<TaskWithId>(conn);
+        let task = all_tasks.find(id).get_result::<Task>(conn);
         if task.is_err() {
             return false;
         }
@@ -81,5 +61,18 @@ impl TaskWithId {
     #[cfg(test)]
     pub fn delete_all(conn: &SqliteConnection) -> bool {
         diesel::delete(all_tasks).execute(conn).is_ok()
+    }
+}
+
+impl InsertableTask {
+    pub fn insert(task_form_input: TaskFormInput, conn: &SqliteConnection) -> bool {
+        let task = InsertableTask {
+            description: task_form_input.description,
+            completed: false,
+        };
+        diesel::insert_into(tasks::table)
+            .values(&task)
+            .execute(conn)
+            .is_ok()
     }
 }
