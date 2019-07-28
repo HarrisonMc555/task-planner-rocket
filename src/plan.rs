@@ -27,8 +27,15 @@ pub struct Plan {
 #[derive(Serialize, Insertable, Debug, Clone)]
 #[table_name = "plans"]
 pub struct InsertablePlan {
+    pub task_id: i32,
     pub description: Option<String>,
     pub completed: bool,
+}
+
+#[derive(FromForm)]
+pub struct PlanFormInput {
+    pub task_id: i32,
+    pub description: String,
 }
 
 impl Plan {
@@ -46,5 +53,30 @@ impl Plan {
             .expect("Error loading tasks")
             .grouped_by(&tasks);
         tasks.into_iter().zip(plans).collect::<Vec<_>>()
+    }
+
+    pub fn of_task(conn: &SqliteConnection, task: &Task) -> Vec<Plan> {
+        Plan::belonging_to(task)
+            .load(conn)
+            .expect("Error loading tasks")
+    }
+}
+
+impl InsertablePlan {
+    pub fn insert(plan_form_input: PlanFormInput, conn: &SqliteConnection) -> bool {
+        let description = if plan_form_input.description.is_empty() {
+            None
+        } else {
+            Some(plan_form_input.description)
+        };
+        let plan = InsertablePlan {
+            task_id: plan_form_input.task_id,
+            description,
+            completed: false,
+        };
+        diesel::insert_into(plans::table)
+            .values(&plan)
+            .execute(conn)
+            .is_ok()
     }
 }
