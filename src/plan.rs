@@ -38,4 +38,13 @@ impl Plan {
             .load::<Plan>(conn)
             .unwrap()
     }
+
+    pub fn all_with_tasks(conn: &SqliteConnection) -> Vec<(Task, Vec<Plan>)> {
+        let tasks = Task::all(conn);
+        let plans = Plan::belonging_to(&tasks)
+            .load(conn)
+            .expect("Error loading tasks")
+            .grouped_by(&tasks);
+        tasks.into_iter().zip(plans).collect::<Vec<_>>()
+    }
 }

@@ -18,7 +18,7 @@ mod task;
 #[cfg(test)]
 mod tests;
 
-use diesel::{prelude::*, SqliteConnection};
+use diesel::SqliteConnection;
 use rocket::fairing::AdHoc;
 use rocket::request::{FlashMessage, Form};
 use rocket::response::{Flash, Redirect};
@@ -42,27 +42,18 @@ struct Context<'a, 'b> {
     tasks_with_plans: Vec<(Task, Vec<Plan>)>,
 }
 
-fn get_tasks_with_plans(conn: &DbConn) -> Vec<(Task, Vec<Plan>)> {
-    let tasks = Task::all(conn);
-    let plans = Plan::belonging_to(&tasks)
-        .load(&conn.0)
-        .expect("Error loading tasks")
-        .grouped_by(&tasks);
-    tasks.into_iter().zip(plans).collect::<Vec<_>>()
-}
-
 impl<'a, 'b> Context<'a, 'b> {
     pub fn err(conn: &DbConn, msg: &'a str) -> Context<'static, 'a> {
         Context {
             msg: Some(("error", msg)),
-            tasks_with_plans: get_tasks_with_plans(conn),
+            tasks_with_plans: Plan::all_with_tasks(conn),
         }
     }
 
     pub fn raw(conn: &DbConn, msg: Option<(&'a str, &'b str)>) -> Context<'a, 'b> {
         Context {
             msg: msg,
-            tasks_with_plans: get_tasks_with_plans(conn),
+            tasks_with_plans: Plan::all_with_tasks(conn),
         }
     }
 }
