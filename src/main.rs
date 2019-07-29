@@ -25,7 +25,7 @@ use rocket::response::{Flash, Redirect};
 use rocket::Rocket;
 use rocket_contrib::{serve::StaticFiles, templates::Template};
 
-use crate::plan::Plan;
+use crate::plan::{InsertablePlan, Plan, PlanFormInput};
 use crate::task::{InsertableTask, Task, TaskFormInput};
 
 // This macro from `diesel_migrations` defines an `embedded_migrations` module
@@ -59,7 +59,7 @@ impl<'a, 'b> Context<'a, 'b> {
 }
 
 #[post("/", data = "<task_form>")]
-fn new(task_form: Form<TaskFormInput>, conn: DbConn) -> Flash<Redirect> {
+fn new_task(task_form: Form<TaskFormInput>, conn: DbConn) -> Flash<Redirect> {
     let task_form_input = task_form.into_inner();
     if task_form_input.description.is_empty() {
         Flash::error(Redirect::to("/"), "Description cannot be empty.")
@@ -71,7 +71,7 @@ fn new(task_form: Form<TaskFormInput>, conn: DbConn) -> Flash<Redirect> {
 }
 
 #[put("/<id>")]
-fn toggle(id: i32, conn: DbConn) -> Result<Redirect, Template> {
+fn toggle_task(id: i32, conn: DbConn) -> Result<Redirect, Template> {
     if Task::toggle_with_id(id, &conn) {
         Ok(Redirect::to("/"))
     } else {
@@ -83,13 +83,49 @@ fn toggle(id: i32, conn: DbConn) -> Result<Redirect, Template> {
 }
 
 #[delete("/<id>")]
-fn delete(id: i32, conn: DbConn) -> Result<Flash<Redirect>, Template> {
+fn delete_task(id: i32, conn: DbConn) -> Result<Flash<Redirect>, Template> {
     if Task::delete_with_id(id, &conn) {
         Ok(Flash::success(Redirect::to("/"), "Task was deleted."))
     } else {
         Err(Template::render(
             "index",
             &Context::err(&conn, "Couldn't delete task."),
+        ))
+    }
+}
+
+#[post("/", data = "<plan_form>")]
+fn new_plan(plan_form: Form<PlanFormInput>, conn: DbConn) -> Flash<Redirect> {
+    let plan_form_input = plan_form.into_inner();
+    if plan_form_input.description.is_empty() {
+        Flash::error(Redirect::to("/"), "Description cannot be empty.")
+    } else if InsertablePlan::insert(plan_form_input, &conn) {
+        Flash::success(Redirect::to("/"), "Plan successfully added.")
+    } else {
+        Flash::error(Redirect::to("/"), "Whoops! The server failed.")
+    }
+}
+
+#[put("/<id>")]
+fn toggle_plan(id: i32, conn: DbConn) -> Result<Redirect, Template> {
+    if Plan::toggle_with_id(id, &conn) {
+        Ok(Redirect::to("/"))
+    } else {
+        Err(Template::render(
+            "index",
+            &Context::err(&conn, "Couldn't toggle plan."),
+        ))
+    }
+}
+
+#[delete("/<id>")]
+fn delete_plan(id: i32, conn: DbConn) -> Result<Flash<Redirect>, Template> {
+    if Plan::delete_with_id(id, &conn) {
+        Ok(Flash::success(Redirect::to("/"), "Plan was deleted."))
+    } else {
+        Err(Template::render(
+            "index",
+            &Context::err(&conn, "Couldn't delete plan."),
         ))
     }
 }
@@ -122,7 +158,8 @@ fn rocket() -> Rocket {
         .attach(AdHoc::on_attach("Database Migrations", run_db_migrations))
         .mount("/", StaticFiles::from("static/"))
         .mount("/", routes![index])
-        .mount("/task", routes![new, toggle, delete])
+        .mount("/task", routes![new_task, toggle_task, delete_task])
+        .mount("/plan", routes![new_plan, toggle_plan, delete_plan])
         .attach(Template::fairing())
 }
 

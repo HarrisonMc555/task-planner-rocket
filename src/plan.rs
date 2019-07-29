@@ -12,7 +12,7 @@ mod schema {
 }
 
 use self::schema::plans;
-use self::schema::plans::dsl::plans as all_plans;
+use self::schema::plans::dsl::{completed as plan_completed, plans as all_plans};
 use crate::task::Task;
 
 #[derive(Identifiable, Queryable, AsChangeset, Associations, Serialize, Deserialize)]
@@ -59,6 +59,24 @@ impl Plan {
         Plan::belonging_to(task)
             .load(conn)
             .expect("Error loading tasks")
+    }
+
+    pub fn toggle_with_id(id: i32, conn: &SqliteConnection) -> bool {
+        let plan = all_plans.find(id).get_result::<Plan>(conn);
+        if plan.is_err() {
+            return false;
+        }
+
+        let new_status = !plan.unwrap().completed;
+        let updated_plan = diesel::update(all_plans.find(id));
+        updated_plan
+            .set(plan_completed.eq(new_status))
+            .execute(conn)
+            .is_ok()
+    }
+
+    pub fn delete_with_id(id: i32, conn: &SqliteConnection) -> bool {
+        diesel::delete(all_plans.find(id)).execute(conn).is_ok()
     }
 }
 
