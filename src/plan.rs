@@ -35,7 +35,7 @@ pub struct InsertablePlan {
 #[derive(FromForm)]
 pub struct PlanFormInput {
     pub task_id: i32,
-    pub description: String,
+    pub description: Option<String>,
 }
 
 impl Plan {
@@ -82,11 +82,7 @@ impl Plan {
 
 impl InsertablePlan {
     pub fn insert(plan_form_input: PlanFormInput, conn: &SqliteConnection) -> bool {
-        let description = if plan_form_input.description.is_empty() {
-            None
-        } else {
-            Some(plan_form_input.description)
-        };
+        let description = plan_form_input.description.filter(|s| !s.is_empty());
         let plan = InsertablePlan {
             task_id: plan_form_input.task_id,
             description,

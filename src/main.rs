@@ -97,9 +97,7 @@ fn delete_task(id: i32, conn: DbConn) -> Result<Flash<Redirect>, Template> {
 #[post("/", data = "<plan_form>")]
 fn new_plan(plan_form: Form<PlanFormInput>, conn: DbConn) -> Flash<Redirect> {
     let plan_form_input = plan_form.into_inner();
-    if plan_form_input.description.is_empty() {
-        Flash::error(Redirect::to("/"), "Description cannot be empty.")
-    } else if InsertablePlan::insert(plan_form_input, &conn) {
+    if InsertablePlan::insert(plan_form_input, &conn) {
         Flash::success(Redirect::to("/"), "Plan successfully added.")
     } else {
         Flash::error(Redirect::to("/"), "Whoops! The server failed.")
