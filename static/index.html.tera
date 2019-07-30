@@ -58,6 +58,10 @@
                     <input type="hidden" name="_method" value="put" />
                     <button class="link" type="submit">{{ task.description }}</button>
                   </form>
+                  <form class="inline" action="/plan/" method="post">
+                    <input type="hidden" name="task_id" value="{{task.id}}" />
+                    <button class="small" type="submit">new plan</button>
+                  </form>
                 {% endif %}
                 <ul>
                   {% for plan in plans %}
