@@ -58,15 +58,24 @@
                     <input type="hidden" name="_method" value="put" />
                     <button class="link" type="submit">{{ task.description }}</button>
                   </form>
-                  <form class="inline" action="/plan/" method="post">
-                    <input type="hidden" name="task_id" value="{{task.id}}" />
-                    <button class="small" type="submit">new plan</button>
-                  </form>
                 {% endif %}
                 <ul>
                   {% for plan in plans %}
-                    <li>{{ plan.description }}</li>
+                    <li>
+                      {{ plan.description }}
+                      <form class="inline" action="/plan/{{plan.id}}" method="post">
+                        <input type="hidden" name="_method" value="delete" />
+                        <button class="primary small" type="submit">delete</button>
+                      </form>
+                    </li>
                   {% endfor %}
+                  <li>
+                    <form action="/plan" method="post" class="inline">
+                      <input type="text" placeholder="enter a plan description..." name="description" id="task-{{task.id}}-new-plan-description" value="" />
+                      <input type="hidden" name="task_id" value="{{task.id}}" />
+                      <button class="primary small" type="submit">add plan</button>
+                    </form>
+                  </li>
                 </ul>
               </li>
             {% endfor %}
