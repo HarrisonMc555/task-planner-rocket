@@ -47,20 +47,31 @@
                     <input type="hidden" name="_method" value="put" />
                     <button class="small" type="submit">undo</button>
                   </form>
-                  <form class="inline" action="/task/{{task.id}}" method="post">
-                    <input type="hidden" name="_method" value="delete" />
-                    <button class="primary small" type="submit">delete</button>
-                  </form>
                 {% else %}
                   <form class="link" action="/task/{{task.id}}" method="post">
                     <input type="hidden" name="_method" value="put" />
                     <button class="link" type="submit">{{ task.description }}</button>
                   </form>
                 {% endif %}
+                <form class="inline" action="/task/{{task.id}}" method="post">
+                  <input type="hidden" name="_method" value="delete" />
+                  <button class="primary small" type="submit">delete</button>
+                </form>
                 <ul>
                   {% for plan in plans %}
                     <li>
-                      {{ plan.description }}
+                      {% if plan.completed %}
+                        <span class="completed">{{ plan.description }}</span>
+                        <form class="inline" action="/plan/{{plan.id}}" method="post">
+                          <input type="hidden" name="_method" value="put" />
+                          <button class="small" type="submit">undo</button>
+                        </form>
+                      {% else %}
+                        <form class="link" action="/plan/{{plan.id}}" method="post">
+                          <input type="hidden" name="_method" value="put" />
+                          <button class="link" type="submit">{{ plan.description }}</button>
+                        </form>
+                      {% endif %}
                       <form class="inline" action="/plan/{{plan.id}}" method="post">
                         <input type="hidden" name="_method" value="delete" />
                         <button class="primary small" type="submit">delete</button>
