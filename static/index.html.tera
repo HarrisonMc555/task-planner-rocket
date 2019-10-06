@@ -21,14 +21,12 @@
         <h4>Task Planner</h4>
         <form action="/task" method="post">
           <div class="ten columns">
-            <input type="text" placeholder="enter a task description..."
-                   name="description" id="description" value="" autofocus
-                   class="u-full-width {% if msg %}field-{{msg.0}}{% endif %}" />
-                   {% if msg %}
-                     <small class="field-{{msg.0}}-msg">
-                       {{ msg.1 }}
-                     </small>
-                   {% endif %}
+            <input type="text" placeholder="enter a task description..." name="description" id="description" value="" autofocus class="u-full-width {% if msg %}field-{{msg.0}}{% endif %}" />
+            {% if msg %}
+              <small class="field-{{msg.0}}-msg">
+                {{ msg.1 }}
+              </small>
+            {% endif %}
           </div>
           <div class="two columns">
             <input type="submit" value="add task">
@@ -49,24 +47,44 @@
                     <input type="hidden" name="_method" value="put" />
                     <button class="small" type="submit">undo</button>
                   </form>
-                  <form class="inline" action="/task/{{task.id}}" method="post">
-                    <input type="hidden" name="_method" value="delete" />
-                    <button class="primary small" type="submit">delete</button>
-                  </form>
                 {% else %}
                   <form class="link" action="/task/{{task.id}}" method="post">
                     <input type="hidden" name="_method" value="put" />
                     <button class="link" type="submit">{{ task.description }}</button>
                   </form>
-                  <form class="inline" action="/plan/" method="post">
-                    <input type="hidden" name="task_id" value="{{task.id}}" />
-                    <button class="small" type="submit">new plan</button>
-                  </form>
                 {% endif %}
+                <form class="inline" action="/task/{{task.id}}" method="post">
+                  <input type="hidden" name="_method" value="delete" />
+                  <button class="primary small" type="submit">delete</button>
+                </form>
                 <ul>
                   {% for plan in plans %}
-                    <li>{{ plan.description }}</li>
+                    <li>
+                      {% if plan.completed %}
+                        <span class="completed">{{ plan.description }}</span>
+                        <form class="inline" action="/plan/{{plan.id}}" method="post">
+                          <input type="hidden" name="_method" value="put" />
+                          <button class="small" type="submit">undo</button>
+                        </form>
+                      {% else %}
+                        <form class="link" action="/plan/{{plan.id}}" method="post">
+                          <input type="hidden" name="_method" value="put" />
+                          <button class="link" type="submit">{{ plan.description }}</button>
+                        </form>
+                      {% endif %}
+                      <form class="inline" action="/plan/{{plan.id}}" method="post">
+                        <input type="hidden" name="_method" value="delete" />
+                        <button class="primary small" type="submit">delete</button>
+                      </form>
+                    </li>
                   {% endfor %}
+                  <li>
+                    <form action="/plan" method="post" class="inline">
+                      <input type="text" placeholder="enter a plan description..." name="description" id="task-{{task.id}}-new-plan-description" value="" />
+                      <input type="hidden" name="task_id" value="{{task.id}}" />
+                      <button class="primary small" type="submit">add plan</button>
+                    </form>
+                  </li>
                 </ul>
               </li>
             {% endfor %}

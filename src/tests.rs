@@ -35,7 +35,7 @@ fn test_insertion_deletion() {
 
         // Issue a request to insert a new task.
         client
-            .post("/todo")
+            .post("/task")
             .header(ContentType::Form)
             .body("description=My+first+task")
             .dispatch();
@@ -49,8 +49,8 @@ fn test_insertion_deletion() {
         assert_eq!(new_tasks[0].completed, false);
 
         // Issue a request to delete the task.
-        let id = new_tasks[0].id.unwrap();
-        client.delete(format!("/todo/{}", id)).dispatch();
+        let id = new_tasks[0].id;
+        client.delete(format!("/task/{}", id)).dispatch();
 
         // Ensure it's gone.
         let final_tasks = Task::all(&conn);
@@ -66,20 +66,22 @@ fn test_toggle() {
     run_test!(|client, conn| {
         // Issue a request to insert a new task; ensure it's not yet completed.
         client
-            .post("/todo")
+            .post("/task")
             .header(ContentType::Form)
             .body("description=test_for_completion")
             .dispatch();
 
-        let task = Task::all(&conn)[0].clone();
+        // Need this let for lifetime issues
+        let all_tasks = Task::all(&conn);
+        let (task, _rest) = all_tasks.split_first().unwrap();
         assert_eq!(task.completed, false);
 
         // Issue a request to toggle the task; ensure it is completed.
-        client.put(format!("/todo/{}", task.id.unwrap())).dispatch();
+        client.put(format!("/task/{}", task.id)).dispatch();
         assert_eq!(Task::all(&conn)[0].completed, true);
 
         // Issue a request to toggle the task; ensure it's not completed again.
-        client.put(format!("/todo/{}", task.id.unwrap())).dispatch();
+        client.put(format!("/task/{}", task.id)).dispatch();
         assert_eq!(Task::all(&conn)[0].completed, false);
     })
 }
@@ -98,7 +100,7 @@ fn test_many_insertions() {
             // Issue a request to insert a new task with a random description.
             let desc: String = rng.sample_iter(&Alphanumeric).take(12).collect();
             client
-                .post("/todo")
+                .post("/task")
                 .header(ContentType::Form)
                 .body(format!("description={}", desc))
                 .dispatch();
@@ -121,7 +123,7 @@ fn test_many_insertions() {
 fn test_bad_form_submissions() {
     run_test!(|client, _conn| {
         // Submit an empty form. We should get a 422 but no flash error.
-        let res = client.post("/todo").header(ContentType::Form).dispatch();
+        let res = client.post("/task").header(ContentType::Form).dispatch();
 
         let mut cookies = res.headers().get("Set-Cookie");
         assert_eq!(res.status(), Status::UnprocessableEntity);
@@ -130,7 +132,7 @@ fn test_bad_form_submissions() {
         // Submit a form with an empty description. We look for 'error' in the
         // cookies which corresponds to flash message being set as an error.
         let res = client
-            .post("/todo")
+            .post("/task")
             .header(ContentType::Form)
             .body("description=")
             .dispatch();
@@ -140,7 +142,7 @@ fn test_bad_form_submissions() {
 
         // Submit a form without a description. Expect a 422 but no flash error.
         let res = client
-            .post("/todo")
+            .post("/task")
             .header(ContentType::Form)
             .body("evil=smile")
             .dispatch();
