@@ -22,6 +22,7 @@
         <form action="/task" method="post">
           <div class="ten columns">
             <input type="text" placeholder="enter a task description..." name="description" id="description" value="" autofocus class="u-full-width {% if msg %}field-{{msg.0}}{% endif %}" />
+            <input type="date" name="due_date" id="due_date"/>
             {% if msg %}
               <small class="field-{{msg.0}}-msg">
                 {{ msg.1 }}
@@ -42,12 +43,13 @@
               {% set plans = task_and_plans.1 %}
               <li>
                 {% if task.completed %}
-                  <span class="completed">{{ task.description }}</span>
+                  <span class="completed">{{ task.due_date }} {{ task.description }}</span>
                   <form class="inline" action="/task/{{task.id}}" method="post">
                     <input type="hidden" name="_method" value="put" />
                     <button class="small" type="submit">undo</button>
                   </form>
                 {% else %}
+                  {{ task.due_date }}
                   <form class="link" action="/task/{{task.id}}" method="post">
                     <input type="hidden" name="_method" value="put" />
                     <button class="link" type="submit">{{ task.description }}</button>

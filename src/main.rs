@@ -15,6 +15,7 @@ extern crate rocket_contrib;
 
 mod plan;
 mod task;
+mod util;
 #[cfg(test)]
 mod tests;
 
