@@ -2,7 +2,7 @@ use diesel::{self, prelude::*};
 
 mod schema {
     table! {
-        tasks {
+        tasks (id) {
             id -> Integer,
             description -> Text,
             completed -> Bool,
