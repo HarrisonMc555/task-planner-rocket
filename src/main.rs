@@ -15,9 +15,9 @@ extern crate rocket_contrib;
 
 mod plan;
 mod task;
-mod util;
 #[cfg(test)]
 mod tests;
+mod util;
 
 use diesel::SqliteConnection;
 use rocket::fairing::AdHoc;
@@ -53,8 +53,18 @@ impl<'a, 'b> Context<'a, 'b> {
 
     pub fn raw(conn: &DbConn, msg: Option<(&'a str, &'b str)>) -> Context<'a, 'b> {
         Context {
-            msg: msg,
+            msg,
             tasks_with_plans: Plan::all_with_tasks(conn),
+        }
+    }
+
+    pub fn new(
+        msg: Option<(&'a str, &'b str)>,
+        tasks_with_plans: Vec<(Task, Vec<Plan>)>,
+    ) -> Context<'a, 'b> {
+        Context {
+            msg,
+            tasks_with_plans,
         }
     }
 }
@@ -129,6 +139,11 @@ fn delete_plan(id: i32, conn: DbConn) -> Result<Flash<Redirect>, Template> {
     }
 }
 
+#[get("/today")]
+fn today(conn: DbConn) -> Template {
+    Template::render("today", &Context::new(None, plan)
+}
+
 #[get("/")]
 fn index(msg: Option<FlashMessage<'_, '_>>, conn: DbConn) -> Template {
     Template::render(
@@ -156,7 +171,7 @@ fn rocket() -> Rocket {
         .attach(DbConn::fairing())
         .attach(AdHoc::on_attach("Database Migrations", run_db_migrations))
         .mount("/", StaticFiles::from("static/"))
-        .mount("/", routes![index])
+        .mount("/", routes![index, today])
         .mount("/task", routes![new_task, toggle_task, delete_task])
         .mount("/plan", routes![new_plan, toggle_plan, delete_plan])
         .attach(Template::fairing())

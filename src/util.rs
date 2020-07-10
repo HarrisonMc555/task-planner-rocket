@@ -16,6 +16,7 @@ impl<'v> FromFormValue<'v> for NaiveDate {
                 .percent_decode()
                 .map_err(|_| form_value)?;
             let date = ChronoNaiveDate::parse_from_str(form_string, "%Y-%m-%d")
+                .or_else(|_| ChronoNaiveDate::parse_from_str(form_string, "%Y-%m-%dT%H:%M"))
                 .map_err(|_| form_value)?;
             Ok(NaiveDate(date))
     }

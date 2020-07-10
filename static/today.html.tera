@@ -18,22 +18,7 @@
       <p><!--Nothing to see here --></p>
 
       <div class="row">
-        <h4>Task Planner</h4>
-        <form action="/task" method="post">
-          <div class="ten columns">
-            <input type="text" placeholder="enter a task description..." name="description" id="description" value="" autofocus class="u-full-width {% if msg %}field-{{msg.0}}{% endif %}" />
-            {# <input type="date" name="due_date" id="due_date"/> #}
-            <input type="datetime-local" name="due_date" id="due_date"/>
-            {% if msg %}
-              <small class="field-{{msg.0}}-msg">
-                {{ msg.1 }}
-              </small>
-            {% endif %}
-          </div>
-          <div class="two columns">
-            <input type="submit" value="add task">
-          </div>
-        </form>
+        <h4>Today</h4>
       </div>
 
       <div class="row">

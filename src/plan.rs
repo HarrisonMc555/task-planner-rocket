@@ -1,3 +1,4 @@
+use chrono::NaiveDate;
 use diesel::{self, prelude::*};
 
 mod schema {
@@ -77,6 +78,13 @@ impl Plan {
 
     pub fn delete_with_id(id: i32, conn: &SqliteConnection) -> bool {
         diesel::delete(all_plans.find(id)).execute(conn).is_ok()
+    }
+
+    pub fn all_on_date(conn: &SqliteConnection, date: NaiveDate) -> Vec<Plan> {
+        all_plans
+            .filter(self::schema::plans::dsl::date.eq(date))
+            .load::<Plan>(&conn)
+            .expect("Error loading plans")
     }
 }
 
